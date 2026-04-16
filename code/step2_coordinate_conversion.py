@@ -6,18 +6,19 @@
 
 Usage:
     # 处理单个时间段
-    python code/step2_coordinate_conversion.py --period 0750am-0805am
+    python code/step2_coordinate_conversion.py --period 0750am-0805am --data-dir US-101
 
     # 处理所有时间段
-    python code/step2_coordinate_conversion.py
+    python code/step2_coordinate_conversion.py --data-dir US-101
 
     # 指定输出和文档目录
-    python code/step2_coordinate_conversion.py --period 0750am-0805am --output-dir code/output --doc-dir doc
+    python code/step2_coordinate_conversion.py --period 0750am-0805am --data-dir US-101 --output-dir code/output --doc-dir doc
 
 Arguments:
     --period      时间段 (可选, 如 "0750am-0805am", "0805am-0820am", "0820am-0835am")
-    --output-dir  输出目录 (默认: code/output)
-    --doc-dir     文档目录 (默认: doc)
+    --data-dir    输入数据目录名称 (默认: US-101)，用于构建输入/输出路径
+    --output-dir  输出根目录 (默认: code/output)，数据将保存到 output-dir/data-dir-name/period
+    --doc-dir     文档根目录 (默认: doc)，报告和图片将保存到 doc-dir/data-dir-name/period
 """
 
 import os
@@ -282,6 +283,8 @@ def main():
     parser = argparse.ArgumentParser(description='Data Cleaning and Coordinate Conversion')
     parser.add_argument('--period', type=str, default=None,
                        help='Time period to process (e.g., "0750am-0805am")')
+    parser.add_argument('--data-dir', type=str, default='US-101',
+                       help='Input data directory name')
     parser.add_argument('--output-dir', type=str, default='code/output',
                        help='Output directory for data')
     parser.add_argument('--doc-dir', type=str, default='doc',
@@ -289,15 +292,20 @@ def main():
     args = parser.parse_args()
 
     period = args.period
-    OUTPUT_DIR = args.output_dir
-    DOC_DIR = args.doc_dir
-    PIC_DIR = os.path.join(DOC_DIR, 'pic')
+    data_dir_name = os.path.basename(os.path.normpath(args.data_dir))
 
-    # 设置输入文件
+    # 构建输出路径: output-dir/data-dir/period
+    # 构建文档路径: doc-dir/data-dir/period
     if period:
-        INPUT_FILE = os.path.join('code/output', period, f'trajectories_smoothed_{period}.csv')
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name, period)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name, period)
+        INPUT_FILE = os.path.join(args.output_dir, data_dir_name, period, f'trajectories_smoothed_{period}.csv')
     else:
-        INPUT_FILE = 'code/output/trajectories_smoothed.csv'
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name)
+        INPUT_FILE = os.path.join(args.output_dir, data_dir_name, 'trajectories_smoothed.csv')
+
+    PIC_DIR = os.path.join(DOC_DIR, 'pic')
 
     # 确保输出目录存在
     os.makedirs(OUTPUT_DIR, exist_ok=True)

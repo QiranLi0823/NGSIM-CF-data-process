@@ -4,15 +4,15 @@
 
 Usage:
     # 指定数据目录和输出目录
-    python code/step1_denoising.py --period 0750am-0805am --data-dir US-101 --output-dir code/output --doc-dir ./doc
+    python code/step1_denoising.py --period 0750am-0805am --data-dir US-101 --output-dir code/output --doc-dir doc
 
-    python code/step1_denoising.py --data-dir ./US-101  --period 0750am-0805am --data-dir US-101 --output-dir code/output2 --doc-dir ./doc2
+    python code/step1_denoising.py --data-dir ./US-101 --period 0750am-0805am --output-dir code/output --doc-dir doc
 
 Arguments:
     --period      时间段 (可选, 如 "0750am-0805am", "0805am-0820am", "0820am-0835am")
-    --data-dir    输入数据目录 (默认: US-101)
-    --output-dir  输出目录 (默认: code/output)
-    --doc-dir     文档目录 (默认: doc)
+    --data-dir    输入数据目录 (默认: US-101)，最终输出路径为 output-dir/data-dir-name/period
+    --output-dir  输出根目录 (默认: code/output)，数据将保存到 output-dir/data-dir-name/period
+    --doc-dir     文档根目录 (默认: doc)，报告和图片将保存到 doc-dir/data-dir-name/period
 """
 
 import os
@@ -547,8 +547,18 @@ def main():
 
     period = args.period
     DATA_DIR = args.data_dir
-    OUTPUT_DIR = args.output_dir
-    DOC_DIR = args.doc_dir
+
+    # 构建输出路径: output-dir/data-dir/period
+    # 构建文档路径: doc-dir/data-dir/period
+    data_dir_name = os.path.basename(os.path.normpath(DATA_DIR))
+
+    if period:
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name, period)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name, period)
+    else:
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name)
+
     PIC_DIR = os.path.join(DOC_DIR, 'pic')
 
     # 确保输出目录存在

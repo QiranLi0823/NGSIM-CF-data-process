@@ -2,6 +2,22 @@
 步骤5 & 6: 数据标准化与分段 + 持久化
 - 滑动窗口切片：10秒和20秒两个版本
 - 保存为HDF5格式
+
+Usage:
+    # 处理单个时间段
+    python code/step5_segmentation.py --period 0750am-0805am --data-dir US-101
+
+    # 处理所有时间段
+    python code/step5_segmentation.py --data-dir US-101
+
+    # 指定输出和文档目录
+    python code/step5_segmentation.py --period 0750am-0805am --data-dir US-101 --output-dir code/output --doc-dir doc
+
+Arguments:
+    --period      时间段 (可选, 如 "0750am-0805am", "0805am-0820am", "0820am-0835am")
+    --data-dir    输入数据目录名称 (默认: US-101)，用于构建输入/输出路径
+    --output-dir  输出根目录 (默认: code/output)，数据将保存到 output-dir/data-dir-name/period
+    --doc-dir     文档根目录 (默认: doc)，报告和图片将保存到 doc-dir/data-dir-name/period
 """
 
 import os
@@ -239,6 +255,8 @@ def main():
     parser = argparse.ArgumentParser(description='Segmentation and HDF5 Export')
     parser.add_argument('--period', type=str, default=None,
                        help='Time period to process (e.g., "0750am-0805am")')
+    parser.add_argument('--data-dir', type=str, default='US-101',
+                       help='Input data directory name')
     parser.add_argument('--output-dir', type=str, default='code/output',
                        help='Output directory for data')
     parser.add_argument('--doc-dir', type=str, default='doc',
@@ -246,16 +264,20 @@ def main():
     args = parser.parse_args()
 
     period = args.period
-    OUTPUT_DIR = args.output_dir
-    DOC_DIR = args.doc_dir
-    PIC_DIR = os.path.join(DOC_DIR, 'pic')
+    data_dir_name = os.path.basename(os.path.normpath(args.data_dir))
 
-    # 设置输入文件
-    global INPUT_FILE
+    # 构建输出路径: output-dir/data-dir/period
+    # 构建文档路径: doc-dir/data-dir/period
     if period:
-        INPUT_FILE = os.path.join('code/output', period, f'features_{period}.csv')
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name, period)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name, period)
+        INPUT_FILE = os.path.join(args.output_dir, data_dir_name, period, f'features_{period}.csv')
     else:
-        INPUT_FILE = 'code/output/features.csv'
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name)
+        INPUT_FILE = os.path.join(args.output_dir, data_dir_name, 'features.csv')
+
+    PIC_DIR = os.path.join(DOC_DIR, 'pic')
 
     # 确保输出目录存在
     os.makedirs(OUTPUT_DIR, exist_ok=True)

@@ -1,6 +1,22 @@
 """
 步骤8: 模型验证 - LSTM简易模型
 使用LSTM模型验证数据集的可用性
+
+Usage:
+    # 验证单个时间段
+    python code/step8_lstm_validation.py --period 0750am-0805am --data-dir US-101
+
+    # 验证所有时间段
+    python code/step8_lstm_validation.py --data-dir US-101
+
+    # 指定输出和文档目录
+    python code/step8_lstm_validation.py --period 0750am-0805am --data-dir US-101 --output-dir code/output --doc-dir doc
+
+Arguments:
+    --period      时间段 (可选, 如 "0750am-0805am", "0805am-0820am", "0820am-0835am")
+    --data-dir    输入数据目录名称 (默认: US-101)，用于构建输入/输出路径
+    --output-dir  输出根目录 (默认: code/output)，模型将保存到 output-dir/data-dir-name/period
+    --doc-dir     文档根目录 (默认: doc)，报告和图片将保存到 doc-dir/data-dir-name/period
 """
 
 import os
@@ -232,6 +248,8 @@ def main():
     parser = argparse.ArgumentParser(description='LSTM Model Validation')
     parser.add_argument('--period', type=str, default=None,
                        help='Time period to process (e.g., "0750am-0805am")')
+    parser.add_argument('--data-dir', type=str, default='US-101',
+                       help='Input data directory name')
     parser.add_argument('--output-dir', type=str, default='code/output',
                        help='Output directory for data')
     parser.add_argument('--doc-dir', type=str, default='doc',
@@ -239,16 +257,20 @@ def main():
     args = parser.parse_args()
 
     period = args.period
-    OUTPUT_DIR = args.output_dir
-    DOC_DIR = args.doc_dir
-    PIC_DIR = os.path.join(DOC_DIR, 'pic')
+    data_dir_name = os.path.basename(os.path.normpath(args.data_dir))
 
-    # 设置输入文件
-    global INPUT_FILE_10S
+    # 构建输出路径: output-dir/data-dir/period
+    # 构建文档路径: doc-dir/data-dir/period
     if period:
-        INPUT_FILE_10S = os.path.join('code/output', period, f'train_10s_{period}.h5')
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name, period)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name, period)
+        INPUT_FILE_10S = os.path.join(args.output_dir, data_dir_name, period, f'train_10s_{period}.h5')
     else:
-        INPUT_FILE_10S = 'code/output/train_10s.h5'
+        OUTPUT_DIR = os.path.join(args.output_dir, data_dir_name)
+        DOC_DIR = os.path.join(args.doc_dir, data_dir_name)
+        INPUT_FILE_10S = os.path.join(args.output_dir, data_dir_name, 'train_10s.h5')
+
+    PIC_DIR = os.path.join(DOC_DIR, 'pic')
 
     # 确保输出目录存在
     os.makedirs(OUTPUT_DIR, exist_ok=True)
