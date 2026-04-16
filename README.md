@@ -8,7 +8,7 @@
 
 </div>
 
-This project provides a complete processing pipeline for the NGSIM-US-101 dataset, converting raw trajectory data into machine learning training data suitable for **Car-Following** tasks.
+This project provides a complete processing pipeline for the NGSIM-US-101 dataset, converting raw trajectory data into machine learning training data suitable for **Car-Following** tasks. In addition to processing NGSIM-US-101, it can also process other parts of the NGSIM dataset.
 
 ## Table of Contents
 
